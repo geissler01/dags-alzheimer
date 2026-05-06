@@ -1,0 +1,7 @@
+# Librerías Python específicas requeridas para los DAGs y Plugins
+# Airflow instalará estas dependencias a nivel de contenedor
+
+pandas>=2.0.0
+numpy>=1.24.0
+pyspark>=3.5.0
+requests>=2.31.0
