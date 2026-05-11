@@ -33,7 +33,7 @@ def analytics_pipeline():
     @task
     def init_db_schema():
         dag_dir = os.path.dirname(os.path.abspath(__file__))
-        sql_path = os.path.join(os.path.dirname(dag_dir), 'sql', 'crear_tabla_ejercicio_8.sql')
+        sql_path = os.path.join(dag_dir, 'sql', 'crear_tabla_ejercicio_8.sql')
         with open(sql_path, 'r') as f:
             sql = f.read()
         hook = PostgresHook(postgres_conn_id='postgres_aws_ejercicio_8')
