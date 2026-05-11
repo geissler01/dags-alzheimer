@@ -1,5 +1,5 @@
 from airflow import DAG
-import datetime
+from datetime import datetime
 
 with DAG(
     dag_id = 'ejercicio_8',
