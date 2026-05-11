@@ -1,5 +1,4 @@
-from airflow.decorators import dag, task
-from airflow.utils.task_group import TaskGroup
+from airflow.sdk import dag, task, TaskGroup
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
 import logging
