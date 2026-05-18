@@ -133,15 +133,22 @@ def elt_pipeline_caso_3():
         from caso_3.tasks.extraction_load.ingestion_from_s3 import ingest_s3_to_postgres
         ingest_s3_to_postgres()
 
+    # ---- Instanciación Única de Tareas ----
+    task_create_schemas = task_create_schemas()
+    task_ingest_random_users = task_ingest_random_users()
+    task_ingest_kaggle = task_ingest_kaggle()
+    task_ingest_movielens = task_ingest_movielens()
+    task_load_users_from_s3 = task_load_users_from_s3()
+
     # ---- Definición de dependencias ----
-    # Las validaciones deben pasar primero para asegurar que el entorno este listo
-    validation_group >> [task_create_schemas(), task_ingest_random_users()]
+    # 1. Las validaciones de entorno corren primero y habilitan la creación de esquemas y la ingesta de usuarios
+    validation_group >> [task_create_schemas, task_ingest_random_users]
     
-    # La ingesta de base de datos requiere que primero se creen los esquemas analiticos
-    task_create_schemas() >> [task_ingest_kaggle(), task_ingest_movielens()]
+    # 2. Las ingestas de base de datos Postgres (Kaggle, MovieLens y la carga de S3) dependen de que los esquemas estén creados
+    task_create_schemas >> [task_ingest_kaggle, task_ingest_movielens, task_load_users_from_s3]
     
-    # La carga de S3 a Postgres requiere que el archivo este en S3 y que el esquema Postgres este creado
-    [task_ingest_random_users(), task_create_schemas()] >> task_load_users_from_s3()
+    # 3. La carga de S3 a Postgres requiere que la subida del archivo CSV a S3 haya finalizado
+    task_ingest_random_users >> task_load_users_from_s3
 
 # Instancia el grafo
 elt_pipeline_caso_3()
