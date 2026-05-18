@@ -1,9 +1,8 @@
 from airflow.sdk import dag, task, TaskGroup
 from datetime import datetime, timedelta
 
-# Entorno virtual centralizado y PYTHONPATH para simplificar tareas del DAG
-VENV_PYTHON = '/opt/airflow/.venv/bin/python'
-ENV_CONFIG = {"PYTHONPATH": "/opt/airflow/dags"}
+path_python = '/opt/airflow/.venv/bin/python'
+path_dags = '/opt/airflow/dags'
 
 # Configuraciones basicas por defecto del DAG
 default_args = {
@@ -29,20 +28,42 @@ def elt_pipeline_caso_3():
     with TaskGroup(group_id='validation_layer') as validation_group:
 
         # Validacion de Postgres en entorno virtual (.venv)
-        @task.external_python(python=VENV_PYTHON, env_vars=ENV_CONFIG)
+        @task.external_python(python=path_python)
         def task_validate_postgres():
+            import sys
+            from pathlib import Path
+            
+            # Agrega la ruta de dags al sys.path del worker
+            dag_dir = Path(path_dags).resolve()
+            if str(dag_dir) not in sys.path:
+                sys.path.append(str(dag_dir))
+                
             from caso_3.tasks.test_conextions.validate_connections import validate_postgres
             validate_postgres()
 
         # Validacion de AWS S3 en entorno virtual (.venv)
-        @task.external_python(python=VENV_PYTHON, env_vars=ENV_CONFIG)
+        @task.external_python(python=path_python)
         def task_validate_s3():
+            import sys
+            from pathlib import Path
+            
+            dag_dir = Path(path_dags).resolve()
+            if str(dag_dir) not in sys.path:
+                sys.path.append(str(dag_dir))
+                
             from caso_3.tasks.test_conextions.validate_connections import validate_s3
             validate_s3()
 
         # Validacion de Kaggle en entorno virtual (.venv)
-        @task.external_python(python=VENV_PYTHON, env_vars=ENV_CONFIG)
+        @task.external_python(python=path_python)
         def task_validate_kaggle():
+            import sys
+            from pathlib import Path
+            
+            dag_dir = Path(path_dags).resolve()
+            if str(dag_dir) not in sys.path:
+                sys.path.append(str(dag_dir))
+                
             from caso_3.tasks.test_conextions.validate_connections import validate_kaggle
             validate_kaggle()
 
