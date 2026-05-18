@@ -21,13 +21,13 @@ def transform_analytics_data(users_batches, population_list):
         'location.city': 'city',
         'location.country': 'country',
         'dob.age': 'age'
-    }
+    } # cambiamos los nombres originales por unos mas claros
     
     # Solo tomamos las columnas que existen
-    df_users_clean = df_users[list(cols_to_keep.keys())].rename(columns=cols_to_keep)
+    df_users_clean = df_users[list(cols_to_keep.keys())].rename(columns=cols_to_keep) # Aplica el cambio de nombres
     
     # 3. Cargamos población
-    df_pop = pd.DataFrame(population_list)
+    df_pop = pd.DataFrame(population_list) # population_list ya es un csv porque asi entra en esta funcion
     
     # 4. Join por país
     df_merged = pd.merge(

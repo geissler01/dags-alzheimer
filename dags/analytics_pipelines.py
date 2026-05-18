@@ -31,12 +31,12 @@ def analytics_pipeline():
     # ---- 1. SETUP ----
     @task
     def init_db_schema():
-        dag_dir = os.path.dirname(os.path.abspath(__file__))
-        sql_path = os.path.join(dag_dir, 'sql', 'crear_tabla_ejercicio_8.sql')
-        with open(sql_path, 'r') as f:
-            sql = f.read()
-        hook = PostgresHook(postgres_conn_id='postgres_aws_ejercicio_8')
-        hook.run(sql)
+        dag_dir = os.path.dirname(os.path.abspath(__file__)) # Me lleva a la carpera raiz
+        sql_path = os.path.join(dag_dir, 'sql', 'crear_tabla_ejercicio_8.sql') # construeye la ruta hasta el schema o hacia donde queramos
+        with open(sql_path, 'r') as f: # abre el archivo sql
+            sql = f.read() # convierte a texto todo lo que hay dentro del schema
+        hook = PostgresHook(postgres_conn_id='postgres_aws_ejercicio_8') # crea la conexion con la base de datos
+        hook.run(sql) # corre el comando sql para crear la tabla
         return True
 
     # ---- 2. EXTRACCIÓN ----

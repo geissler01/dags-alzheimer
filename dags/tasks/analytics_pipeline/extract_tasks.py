@@ -9,9 +9,9 @@ def extract_from_api(results=500):
     url = f"https://randomuser.me/api/?results={results}"
     logging.info(f"Consultando API para {results} usuarios...")
 
-    response = requests.get(url)
+    response = requests.get(url) # metodo para traer la api
     if response.status_code == 200:
-        usuarios = response.json()['results']
+        usuarios = response.json()['results'] # conviente a json el texto plano de la api
         logging.info(f"Extracción exitosa de {len(usuarios)} usuarios.")
         return usuarios
     else:
