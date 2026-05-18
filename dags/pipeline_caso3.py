@@ -29,19 +29,19 @@ def elt_pipeline_caso_3():
     with TaskGroup(group_id='validation_layer') as validation_group:
 
         # Validacion de Postgres en entorno virtual (.venv)
-        @task.external_python(python=VENV_PYTHON, env=ENV_CONFIG)
+        @task.external_python(python=VENV_PYTHON, env_vars=ENV_CONFIG)
         def task_validate_postgres():
             from caso_3.tasks.test_conextions.validate_connections import validate_postgres
             validate_postgres()
 
         # Validacion de AWS S3 en entorno virtual (.venv)
-        @task.external_python(python=VENV_PYTHON, env=ENV_CONFIG)
+        @task.external_python(python=VENV_PYTHON, env_vars=ENV_CONFIG)
         def task_validate_s3():
             from caso_3.tasks.test_conextions.validate_connections import validate_s3
             validate_s3()
 
         # Validacion de Kaggle en entorno virtual (.venv)
-        @task.external_python(python=VENV_PYTHON, env=ENV_CONFIG)
+        @task.external_python(python=VENV_PYTHON, env_vars=ENV_CONFIG)
         def task_validate_kaggle():
             from caso_3.tasks.test_conextions.validate_connections import validate_kaggle
             validate_kaggle()
