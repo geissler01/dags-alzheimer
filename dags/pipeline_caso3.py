@@ -67,5 +67,36 @@ def elt_pipeline_caso_3():
         # Al colocarlas en una lista paralela, Celery las distribuye a diferentes workers de AWS
         [task_validate_postgres(), task_validate_s3(), task_validate_kaggle()]
 
+    # ---- 2. CAPA DE PREPARACIÓN E INGESTAS ----
+    # Tarea para crear/verificar los esquemas analíticos en la base de datos Postgres
+    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    def task_create_schemas():
+        import sys
+        from pathlib import Path
+        
+        dag_dir = Path('/opt/airflow/dags').resolve()
+        if str(dag_dir) not in sys.path:
+            sys.path.append(str(dag_dir))
+            
+        from caso_3.tasks.extraction_load.create_schema import create_analytical_schemas
+        create_analytical_schemas()
+
+    # Tarea para descargar usuarios de la API y subirlos a S3 (con validación de existencia)
+    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    def task_ingest_random_users():
+        import sys
+        from pathlib import Path
+        
+        dag_dir = Path('/opt/airflow/dags').resolve()
+        if str(dag_dir) not in sys.path:
+            sys.path.append(str(dag_dir))
+            
+        from caso_3.tasks.extraction_load.ingestion_user import users_from_api_to_s3
+        users_from_api_to_s3()
+
+    # ---- Definición de dependencias ----
+    # Las ingestas y la preparación se ejecutan en paralelo una vez que el grupo de validaciones pasa con éxito
+    validation_group >> [task_create_schemas(), task_ingest_random_users()]
+
 # Instancia el grafo
 elt_pipeline_caso_3()
