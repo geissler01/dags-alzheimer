@@ -9,7 +9,7 @@ api_url = "https://randomuser.me/api/"
 batch_size = 5000  # Lote de descarga seguro
 total_users = 162541
 bucket_name = "draco-caso-3-users"
-s3_key = "user/users_random.csv"
+s3_key = "raw/users_random.csv"
 aws_conn_id = "my_s3_conn"
 
 def users_from_api_to_s3():

@@ -94,9 +94,54 @@ def elt_pipeline_caso_3():
         from caso_3.tasks.extraction_load.ingestion_user import users_from_api_to_s3
         users_from_api_to_s3()
 
+    # Tarea para descargar datasets de Kaggle (Netflix, Spotify) y cargarlos a Postgres
+    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    def task_ingest_kaggle():
+        import sys
+        from pathlib import Path
+        
+        dag_dir = Path('/opt/airflow/dags').resolve()
+        if str(dag_dir) not in sys.path:
+            sys.path.append(str(dag_dir))
+            
+        from caso_3.tasks.extraction_load.ingestion_from_kaggle import ingest_kaggle_to_postgres
+        ingest_kaggle_to_postgres()
+
+    # Tarea para descargar dataset de MovieLens 25M y cargarlo a Postgres en chunks
+    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    def task_ingest_movielens():
+        import sys
+        from pathlib import Path
+        
+        dag_dir = Path('/opt/airflow/dags').resolve()
+        if str(dag_dir) not in sys.path:
+            sys.path.append(str(dag_dir))
+            
+        from caso_3.tasks.extraction_load.ingestion_from_movielens import ingest_movielens_to_postgres
+        ingest_movielens_to_postgres()
+
+    # Tarea para descargar usuarios desde Amazon S3 y cargarlos a Postgres
+    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    def task_load_users_from_s3():
+        import sys
+        from pathlib import Path
+        
+        dag_dir = Path('/opt/airflow/dags').resolve()
+        if str(dag_dir) not in sys.path:
+            sys.path.append(str(dag_dir))
+            
+        from caso_3.tasks.extraction_load.ingestion_from_s3 import ingest_s3_to_postgres
+        ingest_s3_to_postgres()
+
     # ---- Definición de dependencias ----
-    # Las ingestas y la preparación se ejecutan en paralelo una vez que el grupo de validaciones pasa con éxito
+    # Las validaciones deben pasar primero para asegurar que el entorno este listo
     validation_group >> [task_create_schemas(), task_ingest_random_users()]
+    
+    # La ingesta de base de datos requiere que primero se creen los esquemas analiticos
+    task_create_schemas() >> [task_ingest_kaggle(), task_ingest_movielens()]
+    
+    # La carga de S3 a Postgres requiere que el archivo este en S3 y que el esquema Postgres este creado
+    [task_ingest_random_users(), task_create_schemas()] >> task_load_users_from_s3()
 
 # Instancia el grafo
 elt_pipeline_caso_3()
