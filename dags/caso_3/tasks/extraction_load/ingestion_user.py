@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 import requests
 import logging as log
@@ -21,14 +22,43 @@ def users_from_api_to_s3():
     log.info(f"[INFO] >> Iniciando descarga de {total_users} usuarios desde {api_url}")
     usuarios = []
     
+    start_time = time.time()
+    max_execution_time = 360  # Límite máximo de 6 minutos en total para toda la ingesta
+    
     # 2. Descargar en lotes usando tu lógica de extracción (¡Súper rápido y seguro!)
     for i in range(0, total_users, batch_size):
+        # Controlar el tiempo transcurrido total para fallar rápido si se vuelve eterno
+        elapsed = time.time() - start_time
+        if elapsed > max_execution_time:
+            raise TimeoutError(f"[TIMEOUT] La ingesta excedió el límite máximo de {max_execution_time}s (Transcurrido: {elapsed:.1f}s). Abortando para liberar el worker.")
+
         current_batch = min(batch_size, total_users - i)
         log.info(f"Descargando lote de {current_batch} usuarios...")
         
-        response = requests.get(api_url, params={"results": current_batch}, timeout=30)
-        response.raise_for_status()
-        usuarios.extend(response.json()['results'])
+        # Bucle de reintentos inteligente para evitar Rate Limit (429) o fallas de red
+        retries = 5
+        backoff = 3
+        for attempt in range(1, retries + 1):
+            try:
+                response = requests.get(api_url, params={"results": current_batch}, timeout=30)
+                # Si recibimos 429, esperamos y reintentamos con más calma
+                if response.status_code == 429:
+                    log.warning(f"[RATE LIMIT] Código 429 en intento {attempt}/{retries}. Esperando {backoff} segundos...")
+                    time.sleep(backoff)
+                    backoff *= 2
+                    continue
+                response.raise_for_status()
+                usuarios.extend(response.json()['results'])
+                break  # Éxito: salimos del bucle de reintentos
+            except requests.exceptions.RequestException as e:
+                log.warning(f"[ERROR] Intento {attempt}/{retries} falló: {e}")
+                if attempt == retries:
+                    raise e
+                time.sleep(backoff)
+                backoff *= 2
+                
+        # Pausa leve de 1.5 segundos entre lotes exitosos para ser respetuosos con el servidor
+        time.sleep(1.5)
         
     # 3. Aplanar automáticamente con Pandas (¡Todo el anidamiento resuelto en 1 línea!)
     df = pd.json_normalize(usuarios)
