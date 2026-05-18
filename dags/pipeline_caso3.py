@@ -1,9 +1,6 @@
 from airflow.sdk import dag, task, TaskGroup
 from datetime import datetime, timedelta
 
-path_python = '/opt/airflow/.venv/bin/python'
-path_dags = '/opt/airflow/dags'
-
 # Configuraciones basicas por defecto del DAG
 default_args = {
     'owner': 'Draco',
@@ -28,13 +25,13 @@ def elt_pipeline_caso_3():
     with TaskGroup(group_id='validation_layer') as validation_group:
 
         # Validacion de Postgres en entorno virtual (.venv)
-        @task.external_python(python=path_python)
+        @task.external_python(python='/opt/airflow/.venv/bin/python')
         def task_validate_postgres():
             import sys
             from pathlib import Path
             
             # Agrega la ruta de dags al sys.path del worker
-            dag_dir = Path(path_dags).resolve()
+            dag_dir = Path('/opt/airflow/dags').resolve()
             if str(dag_dir) not in sys.path:
                 sys.path.append(str(dag_dir))
                 
@@ -42,12 +39,12 @@ def elt_pipeline_caso_3():
             validate_postgres()
 
         # Validacion de AWS S3 en entorno virtual (.venv)
-        @task.external_python(python=path_python)
+        @task.external_python(python='/opt/airflow/.venv/bin/python')
         def task_validate_s3():
             import sys
             from pathlib import Path
             
-            dag_dir = Path(path_dags).resolve()
+            dag_dir = Path('/opt/airflow/dags').resolve()
             if str(dag_dir) not in sys.path:
                 sys.path.append(str(dag_dir))
                 
@@ -55,12 +52,12 @@ def elt_pipeline_caso_3():
             validate_s3()
 
         # Validacion de Kaggle en entorno virtual (.venv)
-        @task.external_python(python=path_python)
+        @task.external_python(python='/opt/airflow/.venv/bin/python')
         def task_validate_kaggle():
             import sys
             from pathlib import Path
             
-            dag_dir = Path(path_dags).resolve()
+            dag_dir = Path('/opt/airflow/dags').resolve()
             if str(dag_dir) not in sys.path:
                 sys.path.append(str(dag_dir))
                 
