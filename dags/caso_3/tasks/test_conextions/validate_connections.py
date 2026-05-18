@@ -10,19 +10,6 @@ if str(dag_dir) not in sys.path:
 
 from caso_3.tasks.services.db_conection import get_db_engine
 
-# Intenta importar los proveedores de S3 y Kaggle de forma segura
-try:
-    from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-    HAS_S3 = True
-except ImportError:
-    HAS_S3 = False
-
-try:
-    from kaggle.api.kaggle_api_extended import KaggleApi
-    HAS_KAGGLE = True
-except ImportError:
-    HAS_KAGGLE = False
-
 def validate_postgres():
     print("[INFO] Iniciando validacion de conexion a la base de datos Postgres")
     try:
@@ -42,26 +29,25 @@ def validate_postgres():
 
 def validate_s3():
     print("[INFO] Iniciando validacion de conexion a AWS S3")
-    if not HAS_S3:
-        print("[ERROR] El proveedor de AWS no esta instalado (instale apache-airflow-providers-amazon)")
-        return
     try:
+        # Importacion local y segura
+        from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+        
         # Utiliza la conexion AWS configurada en la UI de Airflow como 'my_s3_conn'
         hook = S3Hook(aws_conn_id='my_s3_conn')
         buckets = hook.get_conn().list_buckets()
         bucket_count = len(buckets.get("Buckets", []))
         print(f"[SUCCESS] Conexion exitosa a AWS S3. Se encontraron {bucket_count} buckets.")
+    except ImportError:
+        print("[ERROR] El proveedor de AWS no esta instalado (instale apache-airflow-providers-amazon)")
     except Exception as e:
         print("[ERROR] Fallo la conexion a AWS S3")
         print(f"[DETAILS] {e}")
 
 def validate_kaggle():
     print("[INFO] Iniciando validacion de conexion a Kaggle")
-    if not HAS_KAGGLE:
-        print("[ERROR] El cliente de Kaggle no esta instalado (instale kaggle)")
-        return
     try:
-        # Intenta cargar credenciales de la UI de Airflow de forma dinamica
+        # 1. Cargar credenciales de la UI de Airflow de forma dinamica primero
         try:
             from airflow.models import Variable
             os.environ['KAGGLE_USERNAME'] = Variable.get("KAGGLE_USERNAME")
@@ -71,10 +57,15 @@ def validate_kaggle():
             # Fallback local: Si no hay contexto de Airflow, usa las variables de entorno de la maquina
             print("[INFO] Usando credenciales de Kaggle del entorno local del sistema")
             
-        # Inicializa y valida la autenticacion
+        # 2. AHORA que las variables estan en el entorno, importamos KaggleApi de forma segura
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        
+        # 3. Inicializa y valida la autenticacion
         api = KaggleApi()
         api.authenticate()
         print(f"[SUCCESS] Autenticacion exitosa en Kaggle. Usuario activo: {api.config.username}")
+    except ImportError:
+        print("[ERROR] El cliente de Kaggle no esta instalado (instale kaggle)")
     except Exception as e:
         print("[ERROR] Fallo la conexion o autenticacion en Kaggle")
         print(f"[DETAILS] {e}")
