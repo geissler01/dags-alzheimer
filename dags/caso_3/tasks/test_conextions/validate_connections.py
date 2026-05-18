@@ -17,7 +17,7 @@ def validate_postgres():
         engine = get_db_engine()
         with engine.connect() as conn:
             # Ejecuta ping de validacion basica
-            result = conn.execute(text("SELECT 1")).scalar()
+            result = conn.execute(text("SELECT 1")).scalar() # extrae la primera columna de la primera fila y la convierte directamente a un valor simple de Python (un string, un entero, etc.).
             if result == 1:
                 print("[SUCCESS] Conexion exitosa a PostgreSQL")
             # Muestra la version del motor analitico
@@ -63,25 +63,25 @@ def validate_kaggle():
         # 3. Inicializa y valida la autenticacion
         api = KaggleApi()
         api.authenticate()
-        print(f"[SUCCESS] Autenticacion exitosa en Kaggle. Usuario activo: {api.config.username}")
+        print(f"[SUCCESS] Autenticacion exitosa en Kaggle. Usuario activo: {os.environ.get('KAGGLE_USERNAME')}")
     except ImportError:
         print("[ERROR] El cliente de Kaggle no esta instalado (instale kaggle)")
     except Exception as e:
         print("[ERROR] Fallo la conexion o autenticacion en Kaggle")
         print(f"[DETAILS] {e}")
 
-def main():
-    print("=" * 60)
-    print("[INFO] DIAGNOSTICO DE CONEXIONES Y SERVICIOS - CASO 3")
-    print("=" * 60)
+# def main():
+#     print("=" * 60)
+#     print("[INFO] DIAGNOSTICO DE CONEXIONES Y SERVICIOS - CASO 3")
+#     print("=" * 60)
     
-    validate_postgres()
-    print("-" * 60)
-    validate_s3()
-    print("-" * 60)
-    validate_kaggle()
+#     validate_postgres()
+#     print("-" * 60)
+#     validate_s3()
+#     print("-" * 60)
+#     validate_kaggle()
     
-    print("=" * 60)
+#     print("=" * 60)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
