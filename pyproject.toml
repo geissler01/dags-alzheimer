@@ -9,6 +9,9 @@ dependencies = [
     "apache-airflow-providers-amazon>=9.27.0",
     "apache-airflow-providers-celery>=3.19.0",
     "celery>=5.6.3",
+    "dbt-postgres>=1.10.0",
     "gunicorn>=26.0.0",
+    "kaggle>=2.1.2",
+    "pandas>=3.0.3",
     "psycopg2-binary>=2.9.12",
 ]
