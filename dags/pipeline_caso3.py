@@ -134,18 +134,17 @@ def elt_pipeline_caso_3():
         ingest_s3_to_postgres()
 
     # Tarea para ejecutar transformaciones dbt de forma aislada y segura
-    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    # Tarea normal de Airflow (quitamos el aislamiento de external_python)
+    @task
     def task_run_dbt():
         import os
         import subprocess
-        import sys
         from airflow.providers.postgres.hooks.postgres import PostgresHook
         
-        # 1. Recuperamos las credenciales seguras de Postgres desde la conexión centralizada en la UI de Airflow
+        # 1. Recuperamos las credenciales
         hook = PostgresHook(postgres_conn_id='Db_caso_3_janner')
         conn = hook.get_connection('Db_caso_3_janner')
         
-        # 2. Inyectamos las credenciales en variables de entorno del subproceso en RAM (nunca se escriben en disco)
         env = os.environ.copy()
         env['DBT_HOST'] = str(conn.host)
         env['DBT_PORT'] = str(conn.port if conn.port else 5432)
@@ -153,32 +152,23 @@ def elt_pipeline_caso_3():
         env['DBT_PASSWORD'] = str(conn.password)
         env['DBT_DBNAME'] = str(conn.schema)
         
-        # 3. Definimos las rutas del proyecto en el contenedor del worker
+        # Redirigimos las carpetas de escritura de dbt a /tmp para evitar 
+        # que se estrelle por culpa del volumen de Solo Lectura (:ro)
+        env['DBT_LOG_PATH'] = '/tmp/dbt_logs'
+        env['DBT_TARGET_PATH'] = '/tmp/dbt_target'
+        
         project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
-        # 4. Comando de dbt
-        # Utilizamos la API oficial de dbtRunner para ejecutar dbt de forma programática.
-        # Esto esquiva los binarios rotos de uv, los shebangs incompatibles y los fallos de runpy.
-        dbt_script = (
-            "import sys\n"
-            "from dbt.cli.main import dbtRunner\n"
-            "res = dbtRunner().invoke(sys.argv[1:])\n"
-            "if not res.success:\n"
-            "    sys.exit(2)\n"
-        )
+        # 2. Ejecutamos dbt pasándolo como módulo para evitar los shebangs rotos del binario
         cmd = [
-            sys.executable, '-c', dbt_script, 'run',
+            sys.executable, '-m', 'dbt.cli.main', 'run',
             '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
         ]
-        import logging
-        logger = logging.getLogger("airflow.task")
         
-        logger.info(f"Iniciando subproceso dbt: {' '.join(cmd)}")
-        
-        # 5. Ejecutamos dbt de forma síncrona capturando todo el output
+        # 3. Ejecutamos capturando el output
         result = subprocess.run(
             cmd,
             env=env,
