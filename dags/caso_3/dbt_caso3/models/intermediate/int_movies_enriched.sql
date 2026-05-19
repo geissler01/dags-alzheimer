@@ -9,7 +9,8 @@ links AS (
 enriched_movies AS ( --tasa principal, tabla principal
     SELECT 
         m.movieId, -- saca esto de la tabla movie
-        m.title,
+        -- Limpiamos el año del título para que quede puro
+        TRIM(REGEXP_REPLACE(m.title, '\([0-9]{4}\)$', '')) AS title,
         m.genres,
         l.imdbId, -- de la tabla links
         l.tmdbId,
