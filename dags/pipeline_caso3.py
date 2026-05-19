@@ -164,10 +164,12 @@ def elt_pipeline_caso_3():
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
         ]
+        import logging
+        logger = logging.getLogger("airflow.task")
         
-        print(f"Iniciando subproceso dbt: {' '.join(cmd)}")
+        logger.info(f"Iniciando subproceso dbt: {' '.join(cmd)}")
         
-        # 5. Ejecutamos dbt y transmitimos la bitácora en vivo a los logs de Airflow
+        # 5. Ejecutamos dbt y transmitimos la bitácora en vivo a los logs de Airflow usando el logger oficial
         process = subprocess.Popen(
             cmd,
             env=env,
@@ -176,8 +178,10 @@ def elt_pipeline_caso_3():
             text=True
         )
         
-        for line in process.stdout:
-            print(line, end='')
+        # Leemos la salida en tiempo real y la enviamos al logger para que no se pierda en el búfer
+        for line in iter(process.stdout.readline, ''):
+            if line:
+                logger.info(line.strip())
             
         process.wait()
         
