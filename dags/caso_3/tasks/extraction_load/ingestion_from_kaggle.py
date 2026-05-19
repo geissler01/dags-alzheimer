@@ -146,7 +146,19 @@ def ingest_kaggle_to_postgres():
                 continue
                 
             if file_name.lower().endswith(".csv"):
-                df = pd.read_csv(full_path, dtype=str)
+                logging.info(f"[INFO] --> Cargando {file_name} a la tabla raw_layer.{table_name} en chunks...")
+                first_chunk = True
+                for chunk_df in pd.read_csv(full_path, dtype=str, chunksize=200000):
+                    chunk_df.to_sql(
+                        name=table_name,
+                        con=engine,
+                        schema="raw_layer",
+                        if_exists="replace" if first_chunk else "append",
+                        index=False,
+                        method=psql_insert_copy
+                    )
+                    first_chunk = False
+                logging.info(f"[SUCCESS] --> Tabla raw_layer.{table_name} cargada exitosamente.")
             else:
                 try:
                     df = pd.read_json(full_path)
@@ -154,17 +166,17 @@ def ingest_kaggle_to_postgres():
                     df = pd.read_json(full_path, typ='series').reset_index()
                     df.columns = ['artist_id', 'related_artists']
                     df = df.astype(str)
-            
-            logging.info(f"[INFO] --> Cargando {file_name} a la tabla raw_layer.{table_name}...")
-            df.to_sql(
-                name=table_name,
-                con=engine,
-                schema="raw_layer",
-                if_exists="replace",
-                index=False,
-                method=psql_insert_copy
-            )
-            logging.info(f"[SUCCESS] --> Tabla raw_layer.{table_name} cargada ({len(df)} filas)")
+                
+                logging.info(f"[INFO] --> Cargando {file_name} a la tabla raw_layer.{table_name}...")
+                df.to_sql(
+                    name=table_name,
+                    con=engine,
+                    schema="raw_layer",
+                    if_exists="replace",
+                    index=False,
+                    method=psql_insert_copy
+                )
+                logging.info(f"[SUCCESS] --> Tabla raw_layer.{table_name} cargada ({len(df)} filas)")
 
         logging.info("[SUCCESS] >> Ingesta y carga completa de Kaggle finalizada exitosamente.")
         
