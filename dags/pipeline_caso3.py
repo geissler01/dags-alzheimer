@@ -160,13 +160,13 @@ def elt_pipeline_caso_3():
         # 4. Comando de dbt
         # Utilizamos la API oficial de dbtRunner para ejecutar dbt de forma programática.
         # Esto esquiva los binarios rotos de uv, los shebangs incompatibles y los fallos de runpy.
-        dbt_script = """
-import sys
-from dbt.cli.main import dbtRunner
-res = dbtRunner().invoke(sys.argv[1:])
-if not res.success:
-    sys.exit(2)
-"""
+        dbt_script = (
+            "import sys\n"
+            "from dbt.cli.main import dbtRunner\n"
+            "res = dbtRunner().invoke(sys.argv[1:])\n"
+            "if not res.success:\n"
+            "    sys.exit(2)\n"
+        )
         cmd = [
             sys.executable, '-c', dbt_script, 'run',
             '--select', 'staging',
