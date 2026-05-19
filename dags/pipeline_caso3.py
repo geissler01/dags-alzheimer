@@ -148,11 +148,11 @@ def elt_pipeline_caso_3():
         check_sql = """
         SELECT count(*) 
         FROM information_schema.views 
-        WHERE table_schema = 'public_staging_layer'
+        WHERE table_schema = 'staging_layer'
         """
         records = hook.get_first(check_sql)
         if records and records[0] > 0:
-            logging.info("[INFO] --> Las vistas de dbt ya existen en la capa 'public_staging_layer'. Omitiendo ejecución de dbt run.")
+            logging.info("[INFO] --> Las vistas de dbt ya existen en la capa 'staging_layer'. Omitiendo ejecución de dbt run.")
             return
             
         # 2. Recuperamos las credenciales
@@ -198,7 +198,7 @@ def elt_pipeline_caso_3():
             error_msg += f"--- DBT STDERR ---\n{result.stderr}\n"
             raise Exception(error_msg)
         else:
-            logging.info("[SUCCESS] --> Transformaciones dbt aplicadas correctamente en la capa 'public_staging_layer'.")
+            logging.info("[SUCCESS] --> Transformaciones dbt aplicadas correctamente en la capa 'staging_layer'.")
 
     # ---- Instanciación Única de Tareas ----
     task_create_schemas = task_create_schemas()
