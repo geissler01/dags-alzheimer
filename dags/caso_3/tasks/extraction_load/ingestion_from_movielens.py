@@ -52,8 +52,8 @@ def ingest_movielens_to_postgres():
     
     url = "https://files.grouplens.org/datasets/movielens/ml-25m.zip"
     
-    # Crear carpeta temporal segura
-    temp_dir = Path(tempfile.gettempdir()) / "movielens_data"
+    # Crear carpeta temporal segura en el disco fisico (evitando RAM tmpfs de /tmp)
+    temp_dir = Path(__file__).resolve().parents[2] / "temp_movielens_data"
     if temp_dir.exists():
         shutil.rmtree(temp_dir)
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -101,12 +101,12 @@ def ingest_movielens_to_postgres():
         return
 
     try:
-        # 2. Descarga controlada mediante Streaming (8KB chunks)
+        # 2. Descarga controlada mediante Streaming (5MB chunks para maxima velocidad teorica)
         logging.info(f"[INFO] --> Iniciando descarga de MovieLens 25M desde: {url}")
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
             with open(zip_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
+                for chunk in response.iter_content(chunk_size=5 * 1024 * 1024):
                     if chunk:
                         f.write(chunk)
                         
@@ -137,8 +137,8 @@ def ingest_movielens_to_postgres():
             logging.info(f"[INFO] --> Cargando {file_name} a la tabla raw_layer.{table_name} en chunks...")
             first_chunk = True
             
-            # Leemos en chunks de 100,000 filas para mantener el uso de RAM < 80MB
-            for chunk_df in pd.read_csv(full_path, dtype=str, chunksize=100000):
+            # Leemos en chunks de 500,000 filas para acelerar la carga en la DB (apoyado en la Swap de 4GB)
+            for chunk_df in pd.read_csv(full_path, dtype=str, chunksize=500000):
                 chunk_df.to_sql(
                     name=table_name,
                     con=engine,
