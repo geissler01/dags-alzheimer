@@ -139,6 +139,7 @@ def elt_pipeline_caso_3():
     def task_run_dbt():
         import os
         import subprocess
+        import sys
         from airflow.providers.postgres.hooks.postgres import PostgresHook
         
         # 1. Recuperamos las credenciales
