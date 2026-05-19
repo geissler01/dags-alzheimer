@@ -173,24 +173,26 @@ def elt_pipeline_caso_3():
         
         logger.info(f"Iniciando subproceso dbt: {' '.join(cmd)}")
         
-        # 5. Ejecutamos dbt y transmitimos la bitácora en vivo a los logs de Airflow usando el logger oficial
-        process = subprocess.Popen(
+        # 5. Ejecutamos dbt de forma síncrona capturando todo el output
+        result = subprocess.run(
             cmd,
             env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            capture_output=True,
             text=True
         )
         
-        # Leemos la salida en tiempo real y la enviamos al logger para que no se pierda en el búfer
-        for line in iter(process.stdout.readline, ''):
-            if line:
-                logger.info(line.strip())
-            
-        process.wait()
+        if result.stdout:
+            logger.info("--- DBT STDOUT ---")
+            for line in result.stdout.splitlines():
+                logger.info(line)
+                
+        if result.stderr:
+            logger.error("--- DBT STDERR ---")
+            for line in result.stderr.splitlines():
+                logger.error(line)
         
-        if process.returncode != 0:
-            raise Exception(f"La ejecución de dbt falló con código de salida: {process.returncode}")
+        if result.returncode != 0:
+            raise Exception(f"La ejecución de dbt falló con código de salida: {result.returncode}")
 
     # ---- Instanciación Única de Tareas ----
     task_create_schemas = task_create_schemas()
