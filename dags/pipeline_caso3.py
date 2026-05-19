@@ -158,10 +158,11 @@ def elt_pipeline_caso_3():
         project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
-        # 4. Comando de dbt en el entorno virtual
-        dbt_executable = '/opt/airflow/.venv/bin/dbt'
+        # 4. Comando de dbt ejecutado como módulo de Python usando sys.executable.
+        # Esto es extremadamente robusto ya que sys.executable apunta directamente a '/opt/airflow/.venv/bin/python'
+        # y dbt se ejecuta de forma segura como un módulo cargado en memoria.
         cmd = [
-            dbt_executable, 'run',
+            sys.executable, '-m', 'dbt', 'run',
             '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
