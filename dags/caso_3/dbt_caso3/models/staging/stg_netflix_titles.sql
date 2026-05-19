@@ -4,6 +4,9 @@ WITH sourceData AS (
 
 renamedAndCasted AS (
     SELECT
+        -- Generamos un ID numérico secuencial
+        CAST(ROW_NUMBER() OVER (ORDER BY show_id) AS INTEGER) AS numericId,
+        
         CAST(show_id AS VARCHAR) AS showId,
         CAST(type AS VARCHAR) AS type,
         CAST(title AS VARCHAR) AS title,

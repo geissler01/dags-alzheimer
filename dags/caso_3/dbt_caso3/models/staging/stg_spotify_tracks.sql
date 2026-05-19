@@ -4,6 +4,9 @@ WITH sourceData AS (
 
 renamedAndCasted AS (
     SELECT
+        -- Generamos un ID numérico secuencial
+        CAST(ROW_NUMBER() OVER (ORDER BY id) AS INTEGER) AS numericId,
+        
         -- Identificadores y textos
         CAST(id AS VARCHAR) AS trackId,
         CAST(name AS VARCHAR) AS trackName,
