@@ -61,8 +61,8 @@ def ingest_kaggle_to_postgres():
     # Autenticacion en Kaggle
     kaggle.api.authenticate()
     
-    # Crear carpeta temporal segura en el disco fisico (evitando RAM tmpfs de /tmp)
-    temp_dir = Path(__file__).resolve().parents[2] / "temp_kaggle_data"
+    # Crear carpeta temporal segura en el HOME del worker (evitando dags de solo lectura y RAM tmpfs)
+    temp_dir = Path.home() / "temp_kaggle_data"
     if temp_dir.exists():
         shutil.rmtree(temp_dir)
     temp_dir.mkdir(parents=True, exist_ok=True)
