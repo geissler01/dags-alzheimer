@@ -162,8 +162,9 @@ def elt_pipeline_caso_3():
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
         # 2. Ejecutamos dbt pasándolo como módulo para evitar los shebangs rotos del binario
+        # Usamos explícitamente el Python del .venv, ya que la tarea ya no usa external_python
         cmd = [
-            sys.executable, '-m', 'dbt.cli.main', 'run',
+            '/opt/airflow/.venv/bin/python', '-m', 'dbt.cli.main', 'run',
             '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
