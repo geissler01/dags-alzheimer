@@ -181,18 +181,11 @@ def elt_pipeline_caso_3():
             text=True
         )
         
-        if result.stdout:
-            logger.info("--- DBT STDOUT ---")
-            for line in result.stdout.splitlines():
-                logger.info(line)
-                
-        if result.stderr:
-            logger.error("--- DBT STDERR ---")
-            for line in result.stderr.splitlines():
-                logger.error(line)
-        
         if result.returncode != 0:
-            raise Exception(f"La ejecución de dbt falló con código de salida: {result.returncode}")
+            error_msg = f"La ejecución de dbt falló con código de salida: {result.returncode}\n\n"
+            error_msg += f"--- DBT STDOUT ---\n{result.stdout}\n\n"
+            error_msg += f"--- DBT STDERR ---\n{result.stderr}\n"
+            raise Exception(error_msg)
 
     # ---- Instanciación Única de Tareas ----
     task_create_schemas = task_create_schemas()
