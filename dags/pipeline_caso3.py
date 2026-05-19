@@ -158,12 +158,17 @@ def elt_pipeline_caso_3():
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
         # 4. Comando de dbt
-        # Ejecutamos el script dbt pasándolo como argumento a sys.executable.
-        # Esto ignora el "shebang" roto generado por el host y previene el FileNotFoundError,
-        # mientras ejecuta el script original de dbt con todo su output intacto.
-        dbt_executable = '/opt/airflow/.venv/bin/dbt'
+        # Utilizamos la API oficial de dbtRunner para ejecutar dbt de forma programática.
+        # Esto esquiva los binarios rotos de uv, los shebangs incompatibles y los fallos de runpy.
+        dbt_script = """
+import sys
+from dbt.cli.main import dbtRunner
+res = dbtRunner().invoke(sys.argv[1:])
+if not res.success:
+    sys.exit(2)
+"""
         cmd = [
-            sys.executable, dbt_executable, 'run',
+            sys.executable, '-c', dbt_script, 'run',
             '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
