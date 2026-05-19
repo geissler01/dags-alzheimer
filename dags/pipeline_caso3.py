@@ -142,20 +142,8 @@ def elt_pipeline_caso_3():
         import logging
         from airflow.providers.postgres.hooks.postgres import PostgresHook
         
-        # 1. Validación de existencia de vistas en la base de datos
+        # 1. Recuperamos las credenciales de la base de datos
         hook = PostgresHook(postgres_conn_id='Db_caso_3_janner')
-        
-        check_sql = """
-        SELECT count(*) 
-        FROM information_schema.views 
-        WHERE table_schema = 'staging_layer'
-        """
-        records = hook.get_first(check_sql)
-        if records and records[0] > 0:
-            logging.info("[INFO] --> Las vistas de dbt ya existen en la capa 'staging_layer'. Omitiendo ejecución de dbt run.")
-            return
-            
-        # 2. Recuperamos las credenciales
         conn = hook.get_connection('Db_caso_3_janner')
         
         env = os.environ.copy()
@@ -173,16 +161,15 @@ def elt_pipeline_caso_3():
         project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
-        # 3. Ejecutamos dbt pasándolo como módulo para evitar los shebangs rotos del binario
+        # 2. Ejecutamos dbt pasándolo como módulo para evitar los shebangs rotos del binario
         # Usamos explícitamente el Python del .venv, ya que la tarea ya no usa external_python
         cmd = [
             '/opt/airflow/.venv/bin/python', '-m', 'dbt.cli.main', 'run',
-            '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
         ]
         
-        logging.info("[INFO] --> Ejecutando modelos de dbt en la capa staging...")
+        logging.info("[INFO] --> Ejecutando pipeline completo de dbt (Staging -> Intermediate -> Marts)...")
         
         # 4. Ejecutamos capturando el output
         result = subprocess.run(
@@ -198,7 +185,7 @@ def elt_pipeline_caso_3():
             error_msg += f"--- DBT STDERR ---\n{result.stderr}\n"
             raise Exception(error_msg)
         else:
-            logging.info("[SUCCESS] --> Transformaciones dbt aplicadas correctamente en la capa 'staging_layer'.")
+            logging.info("[SUCCESS] --> Transformaciones dbt aplicadas correctamente en todas las capas (Staging, Intermediate, Marts).")
 
     # ---- Instanciación Única de Tareas ----
     task_create_schemas = task_create_schemas()
