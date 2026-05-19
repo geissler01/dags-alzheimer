@@ -139,7 +139,6 @@ def elt_pipeline_caso_3():
         import os
         import subprocess
         import sys
-        from pathlib import Path
         from airflow.providers.postgres.hooks.postgres import PostgresHook
         
         # 1. Recuperamos las credenciales seguras de Postgres desde la conexión centralizada en la UI de Airflow
@@ -158,11 +157,9 @@ def elt_pipeline_caso_3():
         project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
-        # 4. Comando de dbt ejecutado como módulo de Python usando sys.executable.
-        # Esto es extremadamente robusto ya que sys.executable apunta directamente a '/opt/airflow/.venv/bin/python'
-        # y dbt se ejecuta de forma segura como un módulo cargado en memoria.
+        # 4. Comando de dbt ejecutado como módulo de CLI usando sys.executable y dbt.cli.main
         cmd = [
-            sys.executable, '-m', 'dbt', 'run',
+            sys.executable, '-m', 'dbt.cli.main', 'run',
             '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
