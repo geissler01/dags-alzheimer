@@ -139,11 +139,23 @@ def elt_pipeline_caso_3():
     def task_run_dbt():
         import os
         import subprocess
-        import sys
+        import logging
         from airflow.providers.postgres.hooks.postgres import PostgresHook
         
-        # 1. Recuperamos las credenciales
+        # 1. Validación de existencia de vistas en la base de datos
         hook = PostgresHook(postgres_conn_id='Db_caso_3_janner')
+        
+        check_sql = """
+        SELECT count(*) 
+        FROM information_schema.views 
+        WHERE table_schema = 'public_staging_layer'
+        """
+        records = hook.get_first(check_sql)
+        if records and records[0] > 0:
+            logging.info("[INFO] --> Las vistas de dbt ya existen en la capa 'public_staging_layer'. Omitiendo ejecución de dbt run.")
+            return
+            
+        # 2. Recuperamos las credenciales
         conn = hook.get_connection('Db_caso_3_janner')
         
         env = os.environ.copy()
@@ -161,7 +173,7 @@ def elt_pipeline_caso_3():
         project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
-        # 2. Ejecutamos dbt pasándolo como módulo para evitar los shebangs rotos del binario
+        # 3. Ejecutamos dbt pasándolo como módulo para evitar los shebangs rotos del binario
         # Usamos explícitamente el Python del .venv, ya que la tarea ya no usa external_python
         cmd = [
             '/opt/airflow/.venv/bin/python', '-m', 'dbt.cli.main', 'run',
@@ -170,7 +182,9 @@ def elt_pipeline_caso_3():
             '--profiles-dir', profiles_dir
         ]
         
-        # 3. Ejecutamos capturando el output
+        logging.info("[INFO] --> Ejecutando modelos de dbt en la capa staging...")
+        
+        # 4. Ejecutamos capturando el output
         result = subprocess.run(
             cmd,
             env=env,
@@ -183,6 +197,8 @@ def elt_pipeline_caso_3():
             error_msg += f"--- DBT STDOUT ---\n{result.stdout}\n\n"
             error_msg += f"--- DBT STDERR ---\n{result.stderr}\n"
             raise Exception(error_msg)
+        else:
+            logging.info("[SUCCESS] --> Transformaciones dbt aplicadas correctamente en la capa 'public_staging_layer'.")
 
     # ---- Instanciación Única de Tareas ----
     task_create_schemas = task_create_schemas()
