@@ -133,12 +133,66 @@ def elt_pipeline_caso_3():
         from caso_3.tasks.extraction_load.ingestion_from_s3 import ingest_s3_to_postgres
         ingest_s3_to_postgres()
 
+    # Tarea para ejecutar transformaciones dbt de forma aislada y segura
+    @task.external_python(python='/opt/airflow/.venv/bin/python')
+    def task_run_dbt():
+        import os
+        import subprocess
+        import sys
+        from pathlib import Path
+        from airflow.providers.postgres.hooks.postgres import PostgresHook
+        
+        # 1. Recuperamos las credenciales seguras de Postgres desde la conexión centralizada en la UI de Airflow
+        hook = PostgresHook(postgres_conn_id='Db_caso_3_janner')
+        conn = hook.get_connection('Db_caso_3_janner')
+        
+        # 2. Inyectamos las credenciales en variables de entorno del subproceso en RAM (nunca se escriben en disco)
+        env = os.environ.copy()
+        env['DBT_HOST'] = str(conn.host)
+        env['DBT_PORT'] = str(conn.port if conn.port else 5432)
+        env['DBT_USER'] = str(conn.login)
+        env['DBT_PASSWORD'] = str(conn.password)
+        env['DBT_DBNAME'] = str(conn.schema)
+        
+        # 3. Definimos las rutas del proyecto en el contenedor del worker
+        project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
+        profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
+        
+        # 4. Comando de dbt en el entorno virtual
+        dbt_executable = '/opt/airflow/.venv/bin/dbt'
+        cmd = [
+            dbt_executable, 'run',
+            '--select', 'staging',
+            '--project-dir', project_dir,
+            '--profiles-dir', profiles_dir
+        ]
+        
+        print(f"Iniciando subproceso dbt: {' '.join(cmd)}")
+        
+        # 5. Ejecutamos dbt y transmitimos la bitácora en vivo a los logs de Airflow
+        process = subprocess.Popen(
+            cmd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        
+        for line in process.stdout:
+            print(line, end='')
+            
+        process.wait()
+        
+        if process.returncode != 0:
+            raise Exception(f"La ejecución de dbt falló con código de salida: {process.returncode}")
+
     # ---- Instanciación Única de Tareas ----
     task_create_schemas = task_create_schemas()
     task_ingest_random_users = task_ingest_random_users()
     task_ingest_kaggle = task_ingest_kaggle()
     task_ingest_movielens = task_ingest_movielens()
     task_load_users_from_s3 = task_load_users_from_s3()
+    task_run_dbt = task_run_dbt()
 
     # ---- Definición de dependencias ----
     # 1. Las validaciones de entorno corren primero y habilitan la creación de esquemas y la ingesta de usuarios
@@ -149,6 +203,9 @@ def elt_pipeline_caso_3():
     
     # 3. La carga de S3 a Postgres requiere que la subida del archivo CSV a S3 haya finalizado
     task_ingest_random_users >> task_load_users_from_s3
+
+    # 4. Ejecutar dbt secuencialmente una vez que TODAS las ingestas a raw_layer hayan terminado exitosamente
+    [task_ingest_kaggle, task_ingest_movielens, task_load_users_from_s3] >> task_run_dbt
 
 # Instancia el grafo
 elt_pipeline_caso_3()

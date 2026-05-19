@@ -1,0 +1,145 @@
+PLATAFORMA DE STREAMING CON CAÍDA DE USUARIOS Y PROBLEMAS DE RETENCIÓN
+Contexto del Negocio
+Una empresa internacional de entretenimiento digital dedicada a streaming de contenido multimedia opera en múltiples países y cuenta con millones de usuarios activos distribuidos entre:
+aplicaciones móviles,
+Smart TVs,
+navegadores web,
+consolas de videojuegos,
+tablets y dispositivos inteligentes.
+La plataforma ofrece:
+películas,
+series,
+documentales,
+música,
+podcasts,
+contenido en vivo,
+recomendaciones personalizadas,
+publicidad segmentada,
+contenido premium bajo suscripción.
+Durante los últimos años la compañía experimentó un crecimiento acelerado en usuarios y contenido, lo que provocó un aumento masivo en la cantidad de información generada diariamente por los usuarios y sistemas internos.
+Actualmente la plataforma procesa eventos relacionados con:
+reproducciones,
+pausas,
+búsquedas,
+clics,
+recomendaciones,
+navegación,
+sesiones de usuario,
+anuncios publicitarios,
+errores técnicos,
+tiempos de carga,
+interacciones sociales,
+preferencias de contenido.
+La empresa genera millones de eventos por hora provenientes de usuarios distribuidos globalmente.
+Problemática Actual
+Durante el último año la organización comenzó a detectar señales preocupantes relacionadas con el comportamiento de los usuarios y el rendimiento general de la plataforma.
+Entre los principales problemas identificados se encuentran:
+disminución progresiva en el tiempo promedio de consumo,
+aumento en cancelaciones de suscripciones,
+baja interacción con las recomendaciones,
+incremento en abandonos durante el onboarding,
+reducción en conversiones de usuarios gratuitos a premium,
+fallas frecuentes de reproducción,
+lentitud en ciertas regiones,
+diferencias entre métricas reportadas por distintas áreas.
+Actualmente cada departamento tiene una percepción diferente del problema:
+el área de marketing considera que las recomendaciones no son relevantes,
+el equipo de producto cree que la experiencia inicial es deficiente,
+el área tecnológica sospecha que existen problemas de rendimiento,
+el equipo comercial considera que la segmentación de usuarios es incorrecta,
+soporte técnico asegura que los errores de reproducción aumentaron significativamente.
+Sin embargo, ninguna de las áreas cuenta con evidencia consolidada ni trazabilidad completa de los datos.
+Situación Tecnológica
+La organización obtiene información desde múltiples fuentes distribuidas globalmente:
+aplicaciones móviles,
+Smart TVs,
+plataformas web,
+APIs internas,
+sistemas de publicidad,
+motores de recomendación,
+logs técnicos,
+sistemas de autenticación,
+plataformas de pagos,
+herramientas de monitoreo,
+eventos de navegación,
+plataformas de analítica digital.
+Los datos presentan múltiples desafíos:
+enormes volúmenes históricos,
+eventos generados continuamente,
+información semiestructurada,
+registros duplicados,
+datos corruptos,
+diferencias horarias entre países,
+cambios constantes en estructuras de eventos,
+sesiones incompletas,
+datos faltantes,
+retrasos en sincronización.
+La plataforma genera cientos de millones de eventos mensuales y el volumen de información continúa creciendo constantemente.
+Lo que la Empresa Necesita
+La alta dirección necesita construir una solución que permita:
+comprender el comportamiento completo de los usuarios,
+identificar causas reales de abandono,
+medir engagement,
+detectar patrones de consumo,
+analizar rendimiento de contenido,
+identificar problemas técnicos,
+mejorar recomendaciones,
+optimizar la experiencia de usuario,
+construir métricas confiables y centralizadas,
+generar trazabilidad de eventos,
+entender diferencias entre regiones y dispositivos.
+Además, la empresa busca:
+consolidar información histórica y operacional,
+construir análisis escalables,
+identificar anomalías,
+analizar tendencias de consumo,
+detectar cambios de comportamiento,
+facilitar la toma de decisiones basada en datos,
+mejorar retención de usuarios,
+incrementar conversiones premium.
+La solución también debe ser capaz de soportar crecimiento continuo y procesamiento de grandes volúmenes de información provenientes de múltiples regiones y plataformas.
+Fuentes de Información
+Dataset Principal
+MovieLens 25M Dataset MovieLens 25M Dataset
+Datasets Complementarios
+Netflix Movies and TV Shows Dataset Netflix Movies and TV Shows Dataset
+Spotify Dataset 1921-2020 Spotify Dataset 1921-2020
+H&M Personalized Fashion Recommendations Dataset H&M Personalized Fashion Recommendations
+Información Disponible en los Datasets
+Los datasets contienen millones de registros relacionados con:
+usuarios,
+contenido multimedia,
+historial de consumo,
+reproducciones,
+recomendaciones,
+búsquedas,
+calificaciones,
+interacciones,
+preferencias,
+sesiones,
+comportamiento de navegación,
+consumo histórico,
+popularidad de contenido,
+patrones de interacción.
+La información incluye datos estructurados y semiestructurados con grandes volúmenes históricos y relaciones complejas entre usuarios, contenido y comportamiento digital.
+Escenario Esperado
+La empresa espera que el equipo sea capaz de:
+comprender el problema de negocio,
+analizar comportamiento masivo de usuarios,
+identificar patrones de abandono,
+detectar inconsistencias en datos,
+consolidar información de múltiples fuentes,
+generar métricas confiables,
+construir análisis históricos y operacionales,
+identificar anomalías,
+facilitar la toma de decisiones basada en datos.
+La solución debe contemplar escenarios reales como:
+crecimiento continuo de usuarios,
+eventos masivos diarios,
+información inconsistente,
+cambios de estructura en eventos,
+datos faltantes,
+problemas de calidad,
+registros duplicados,
+análisis históricos complejos,
+procesamiento de grandes volúmenes de información.

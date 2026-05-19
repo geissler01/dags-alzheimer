@@ -1,0 +1,36 @@
+version: 2
+
+sources:
+  - name: raw_layer
+    schema: raw_layer
+    description: "Capa de datos crudos (Raw Layer) poblada mediante el pipeline de ingesta de Airflow."
+    tables:
+      # MovieLens 25M (6 tablas)
+      - name: movielens_movies
+        description: "Películas del dataset de MovieLens 25M."
+      - name: movielens_ratings
+        description: "Calificaciones otorgadas por los usuarios a las películas."
+      - name: movielens_tags
+        description: "Etiquetas aplicadas a las películas por parte de los usuarios."
+      - name: movielens_links
+        description: "Mapeo de identificadores de películas a IMDB y TMDB."
+      - name: movielens_genome_scores
+        description: "Puntajes de relevancia de etiquetas del genoma cinematográfico."
+      - name: movielens_genome_tags
+        description: "Etiquetas utilizadas en el genoma de películas de MovieLens."
+
+      # Netflix (1 tabla)
+      - name: netflix_titles
+        description: "Catálogo completo de películas y series disponibles en Netflix."
+
+      # Spotify (3 tablas)
+      - name: spotify_artists
+        description: "Artistas de Spotify con datos de popularidad y géneros."
+      - name: spotify_tracks
+        description: "Catálogo de canciones con métricas acústicas de Spotify."
+      - name: spotify_dict_artists
+        description: "Diccionario de relación de artistas de Spotify."
+
+      # Usuarios Generados (1 tabla)
+      - name: users_generated
+        description: "Usuarios generados ficticios con datos geográficos y demográficos."
