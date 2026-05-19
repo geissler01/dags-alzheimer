@@ -157,9 +157,12 @@ def elt_pipeline_caso_3():
         project_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         profiles_dir = '/opt/airflow/dags/caso_3/dbt_caso3'
         
-        # 4. Comando de dbt ejecutado como módulo de CLI usando sys.executable y dbt.cli.main
+        # 4. Comando de dbt
+        # Como ya reparamos los symlinks de Python del entorno virtual,
+        # el binario nativo de dbt funcionará a la perfección sin el error de FileNotFoundError
+        dbt_executable = '/opt/airflow/.venv/bin/dbt'
         cmd = [
-            sys.executable, '-m', 'dbt.cli.main', 'run',
+            dbt_executable, 'run',
             '--select', 'staging',
             '--project-dir', project_dir,
             '--profiles-dir', profiles_dir
